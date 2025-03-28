@@ -33,7 +33,7 @@ mvn clean package
 
 ### **4️⃣ Run the Application**
 ```sh
-java -jar target/digital-library-1.0.jar
+java -jar target/target\inter-0.0.1-SNAPSHOT.jar
 ```
 
 The application will start at **http://localhost:8080**.
