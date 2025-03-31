@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="styles.css" />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digital Library</title>
+  </head>
+  <body>
+    <h1 style="text-align: center;">📚 Digital Library</h1>
+
+    <!-- Show All Books -->
+    <button onclick="fetchBooks()">Show Books</button>
+
+    <!-- Book List -->
+    <h3>📖 Book List</h3>
+    <ul id="bookList"></ul>
+
+    <hr />
+
+    <!-- Search Books by ID or Title -->
+    <h3>🔍 Search Books</h3>
+    <input type="text" id="searchQuery" placeholder="Enter Book ID or Title" />
+    <button onclick="searchBooks()">Search</button>
+    <ul id="searchResults"></ul>
+
+    <hr />
+
+    <!-- Form to Add Book -->
+    <h3>➕ Add a New Book</h3>
+    <form id="bookForm">
+      <input type="text" id="title" placeholder="Title" required />
+      <input type="text" id="author" placeholder="Author" required />
+      <input type="text" id="genre" placeholder="Genre" />
+      <button type="submit">Add Book</button>
+    </form>
+
+    <hr />
+
+    <!-- Delete Book by ID -->
+    <h3>🗑 Delete a Book</h3>
+    <input type="number" id="deleteId" placeholder="Enter Book ID" />
+    <button onclick="deleteBook()">Delete</button>
+
+    <hr />
+
+    <!-- Update Book by ID -->
+    <h3>✏️ Update Book Details</h3>
+    <input type="number" id="updateId" placeholder="Enter Book ID" required />
+    <input type="text" id="updateTitle" placeholder="New Title" />
+    <input type="text" id="updateAuthor" placeholder="New Author" />
+    <select id="updateAvailability">
+      <option value="true">Available</option>
+      <option value="false">Not Available</option>
+    </select>
+    <button onclick="updateBook()">Update</button>
+
+    <script>
+      const API_URL = "http://localhost:8080/api/books";
+
+      // Fetch and Display All Books with IDs
+      async function fetchBooks() {
+        const response = await fetch(API_URL);
+        const books = await response.json();
+        const bookList = document.getElementById("bookList");
+        bookList.innerHTML = "";
+
+        books.forEach((book) => {
+          const li = document.createElement("li");
+          li.innerHTML = `📖 ID: ${book.id} - <strong>${
+            book.title
+          }</strong> by ${book.author} 
+                                (Genre: ${book.genre}, Available: ${
+            book.available ? "Yes" : "No"
+          })`;
+          bookList.appendChild(li);
+        });
+      }
+
+      // Search Books by ID or Title
+      async function searchBooks() {
+        const query = document.getElementById("searchQuery").value.trim();
+        if (!query) {
+          alert("Please enter a Book ID or Title!");
+          return;
+        }
+
+        let url;
+        if (!isNaN(query)) {
+          // If input is a number, search by ID
+          url = `${API_URL}/${query}`;
+        } else {
+          // Otherwise, search by title
+          url = `${API_URL}/search?title=${query}`;
+        }
+
+        const response = await fetch(url);
+        if (!response.ok) {
+          document.getElementById("searchResults").innerHTML =
+            "<li>No books found</li>";
+          return;
+        }
+
+        const books = await response.json();
+        const searchResults = document.getElementById("searchResults");
+        searchResults.innerHTML = "";
+
+        (Array.isArray(books) ? books : [books]).forEach((book) => {
+          const li = document.createElement("li");
+          li.innerHTML = `📖 ID: ${book.id} - <strong>${
+            book.title
+          }</strong> by ${book.author} 
+                                (Genre: ${book.genre}, Available: ${
+            book.available ? "Yes" : "No"
+          })`;
+          searchResults.appendChild(li);
+        });
+      }
+
+      // Add a New Book
+      document
+        .getElementById("bookForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const book = {
+            title: document.getElementById("title").value,
+            author: document.getElementById("author").value,
+            genre: document.getElementById("genre").value,
+            available: true,
+          };
+
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(book),
+          });
+
+          fetchBooks();
+        });
+
+      // Delete a Book by ID
+      async function deleteBook() {
+        const id = document.getElementById("deleteId").value;
+        if (!id) {
+          alert("Please enter a Book ID!");
+          return;
+        }
+
+        await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        fetchBooks();
+      }
+
+      // Update a Book by ID
+      async function updateBook() {
+        const id = document.getElementById("updateId").value;
+        if (!id) {
+          alert("Please enter a Book ID!");
+          return;
+        }
+
+        const book = {
+          title: document.getElementById("updateTitle").value,
+          author: document.getElementById("updateAuthor").value,
+          available:
+            document.getElementById("updateAvailability").value === "true",
+        };
+
+        await fetch(`${API_URL}/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(book),
+        });
+
+        fetchBooks();
+      }
+    </script>
+  </body>
+</html>

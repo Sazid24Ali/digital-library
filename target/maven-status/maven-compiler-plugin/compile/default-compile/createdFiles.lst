@@ -1,0 +1,5 @@
+com\digital_lib\intern\Entity\Book.class
+com\digital_lib\intern\Controller\BookController.class
+com\digital_lib\intern\Repository\BookRepository.class
+com\digital_lib\intern\InterApplication.class
+com\digital_lib\intern\Service\BookService.class
